@@ -13,41 +13,54 @@ function getProducts () {
     })
 }; 
 
-// affichage des éléments dans le DOM 
+// affichage des éléments dans le DOM
 getProducts (); 
 
 // Introduction des produits dans la page d'accueil 
 
 async function printItems(articles){
-        
+    // document.GetElementById pour retrouver l'id items
     const items = document.getElementById("items");
+    // console.log pour affichage de l'élement dans la console
     console.log(items); 
 
     
-    // Boucle pour réitération des éléments
+    // Boucle pour réitération des éléments 
     for (let i=0; i < articles.length; i++) {
+        // console.log pour afficher les données sous forme de tableau
         console.log(articles[i])
 
+        // création d'une variable reprenant les données pour plus simplicité et de lisibilité
         const produit = articles[i];
+        //console.log(produit)
 
-        console.log(produit)
-
+        // Mise en place de la balise a 
         const linkProducts = document.createElement("a");
         items.appendChild(linkProducts);
         const url = "/product.html?id=" + produit._id;
         linkProducts.setAttribute("href", url)
 
+        // Mise en place de la balise article 
         const article = document.createElement("article"); 
         linkProducts.appendChild(article);
 
+        // Mise en place de la balise image + attribut src 
         const image = document.createElement("img"); 
         article.appendChild(image);
         image.setAttribute("src", produit.imageUrl);
 
-        //const h3Element = document.createElement(h3)
+        //Mise en place de la balise h3 + class + text
+        const h3Elt = document.createElement("h3"); 
+        article.appendChild(h3Elt); 
+        h3Elt.classList.add("productName"); 
+        h3Elt.textContent = produit.name 
+
+        // Mise en place de la balise p + class + text
+        const pElt = document.createElement("p"); 
+        article.appendChild(pElt); 
+        pElt.classList.add("productDescription"); 
+        pElt.textContent = produit.description 
 
     }
-       
-    
-
 }
+ 
