@@ -14,21 +14,20 @@ function getProducts () {
 }; 
 
 // affichage des éléments dans le DOM
-getProducts (); 
+getProducts(); 
 
 // Introduction des produits dans la page d'accueil 
 
-async function printItems(articles){
+//Mise en place d'une fonction qui attendra les données de l'API avant d'excuter le reste du cote - Cette fonction contient une boucle
+    function printItems(articles){
     // document.GetElementById pour retrouver l'id items
     const items = document.getElementById("items");
     // console.log pour affichage de l'élement dans la console
     console.log(items); 
 
     
-    // Boucle pour réitération des éléments 
+    // Boucle pour réitération des éléments nécessaire car le tableau contient plusieurs articles qui doivent être parcourus. 
     for (let i=0; i < articles.length; i++) {
-        // console.log pour afficher les données sous forme de tableau
-        console.log(articles[i])
 
         // création d'une variable reprenant les données pour plus simplicité et de lisibilité
         const produit = articles[i];
@@ -37,7 +36,7 @@ async function printItems(articles){
         // Mise en place de la balise a 
         const linkProducts = document.createElement("a");
         items.appendChild(linkProducts);
-        const url = "/product.html?id=" + produit._id;
+        const url = "./product.html?id=" + produit._id;
         linkProducts.setAttribute("href", url)
 
         // Mise en place de la balise article 
@@ -63,4 +62,3 @@ async function printItems(articles){
 
     }
 }
- 
