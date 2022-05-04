@@ -30,10 +30,20 @@ function printItem(article){
     let itemImg = document.querySelector("article > .item__img")
     console.log(itemImg); 
 
+    // implémentation de l'élement img
     const selectImg = document.createElement("img"); 
     itemImg.appendChild(selectImg); 
+    selectImg.setAttribute("src", article.imageUrl)
+    selectImg.setAttribute("alt", article.altTxt)
 
-    //selectImg.setAttribute("src",  )
+    // implémentation du titre
+    let title1 = document.getElementById("title")
+    console.log(title1); 
+    title1.textContent = article.name
 
+    //implémentation de la description 
+    let description1 = document.getElementById("description"); 
+    console.log(description1); 
+    description1.textContent = article.description
 }
 
