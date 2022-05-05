@@ -45,5 +45,23 @@ function printItem(article){
     let description1 = document.getElementById("description"); 
     console.log(description1); 
     description1.textContent = article.description
+
+    let color1 = document.getElementById("colors"); 
+        console.log(color1); 
+
+    // Mise en place d'une boucle pour parcourir le choix des couleurs
+    
+    
+    for (let color of article.colors) {
+
+        let productColor = document.createElement('option'); 
+        color1.appendChild(productColor); 
+        productColor.value = color;  
+        productColor.innerHTML = color; 
+
+    }
+
+    
+   
 }
 
