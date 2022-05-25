@@ -19,7 +19,7 @@ function getProducts(){
     .then(function(article) {
         console.table(article); 
         printItem(article); 
-        addToCart(article); 
+        addToCartEvent(article); 
     })
     .catch (function(error){
         alert(error);  
@@ -54,7 +54,6 @@ function printItem(article){
 
     //------------------------Mise en place d'une boucle pour parcourir le choix des couleurs------------------//
     
-    
     for (let color of colors) {
 
         let productColor = document.createElement('option'); 
@@ -63,58 +62,58 @@ function printItem(article){
         productColor.innerHTML = color; 
 
     }
-   
 }
 
 //---------------------------------Ajout des produits dans le panier----------------------------------//
 
 //----------------------------------------------Bouton-----------------------------------------------//
 
-function addToCart(article) {
+function addToCartEvent(article) {
     // Pourquoi y a un paramètre dans ta fonction alors que tu l'utilise pas? - Bianca
 
     //Ecoute et réaction lors du clic sur le bouton 
-    const button = document.getElementById("addToCart"); 
-    button.addEventListener('click', function(event) {
+        const button = document.getElementById("addToCart"); 
+        button.addEventListener('click', function(event) {
         event.preventDefault(); 
-    //Options choisies de l'utilisateur
+        //Options choisies de l'utilisateur
         const colorPickedElt = document.getElementById("colors")
         const colorPicked = colorPickedElt.value; 
 
-        const quantityPickedElt = document.getElementById("quantity") 
+        const quantityPickedElt = document.getElementById("quantity")
         const quantityPicked = quantityPickedElt.value;
-
-    // récupération des valeurs du formulaires 
-        let getUserOptions = {
-        id : idProduct, 
-        quantity : Number(quantityPicked),
-        color : colorPicked, 
-    };
 
         //----------------------------------------Local Storage----------------------------------------//
         //--------------Stocker la récupération des valeurs du formulaire dans le local storage--------//
 
-        //---JSON.parse pour convertir les données JSON présentes dans le Ls en objet javascript
-        let productRecordedInTheLs = JSON.parse(localStorage.getItem("produit")); 
-        console.log(productRecordedInTheLs); 
-
-        // S'il y a des produit dans le local Storage
-        if(productRecordedInTheLs){
-            productRecordedInTheLs.push(getUserOptions);
-            localStorage.setItem("produit", JSON.stringify(productRecordedInTheLs)); 
-            console.log(productRecordedInTheLs); 
+        let product = {
+            id : idProduct, 
+            quantity : Number(quantityPicked),  
+            color : colorPicked, 
         };
-        // S'il n'y a PAS de produit dans le Local Storage
-        else{
-            productRecordedInTheLs = []; 
-            productRecordedInTheLs.push(getUserOptions); 
-            localStorage.setItem("produit", JSON.stringify(productRecordedInTheLs)); 
-            console.log(productRecordedInTheLs); 
+        //---JSON.parse pour convertir les données JSON présentes dans le Ls en objet javascript
+         
+        let cart = localStorage.getItem("cart"); 
+        let cartJson = JSON.parse(cart); 
+        console.log(cart); 
+        let newCart = []; 
+
+        for (let index = 0; index < cartJson.length; index++) {
+            
+            const element = cartJson[index];
+            console.log(element); 
+            if(idProduct !== element.id){ 
+                newCart = [...cartJson, product]
+                console.log(newCart); 
+            }
+            
         }
-      
-        
+        if(cartJson.some(element => ))
+        localStorage.setItem("cart", JSON.stringify(newCart));
+
+       
     });
 }
+
 
 
 
