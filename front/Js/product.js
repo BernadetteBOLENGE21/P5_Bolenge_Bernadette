@@ -87,6 +87,7 @@ function addToCartEvent(article) {
       quantity: Number(quantityPicked),
       color: colorPicked,
     };
+
     //---JSON.parse pour convertir les données JSON présentes dans le Ls en objet javascript
 
     let cart = JSON.parse(localStorage.getItem("cart"));
@@ -99,6 +100,7 @@ function addToCartEvent(article) {
       if (cart[i].id === product.id && cart[i].color === product.color) {
         productExists = true;
         cart[i].quantity += product.quantity;
+        cart[i].price += article.price;
         break;
       }
     }

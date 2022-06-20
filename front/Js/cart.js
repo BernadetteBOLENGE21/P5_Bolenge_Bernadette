@@ -1,4 +1,4 @@
-let cart = JSON.parse(localStorage.getItem("cart"));
+let cart = JSON.parse(localStorage.getItem("cart")); // définition du panier
 console.log(cart);
 
 //----------------------Affichage des produits présents dans le panier--------------------//
@@ -6,28 +6,30 @@ console.log(cart);
 //------------------Injection du code de façon dynamique-------------------//
 let shoppingCart = document.getElementById("cart__items");
 let promises = [];
-
+const url = "http://localhost:3000/api/products/";
+///--------- Cette boucle récupère les produits de l'API en page cart. Il faut une boucle pour traiter les promesses
+//qui seront mises dasn un tableau qu'on pourra gérer avec promises.all. On boucle pour récupérer les produits du LS
 for (let i = 0; i < cart.length; i++) {
-  const url = "http://localhost:3000/api/products/";
   // console.log(cart[i].id);
-
+  //On appelle l'API pour récupérer toutes les infos des produits présents dans le local storage et on push dans le tableau promises
+  //afin de de gérer avec promises.all qui va gérer toutes les promessess en même temps. Il répond losque toutes les promesses sont résolues
   const promise = fetch(url + cart[i].id).then((res) => res.json());
   promises.push(promise);
 }
 
-function displayProducts(values) {
+function displayProducts(products) {
   let cartElements = "";
   for (i = 0; i < cart.length; i++) {
     console.log(cart.length);
     cartElements += `<article class="cart__item" data-id="{product-ID}" data-color="{product-color}">
       <div class="cart__item__img">
-        <img src="${values[i].imageUrl}" alt="Photographie d'un canapé">
+        <img src="${products[i].imageUrl}" alt="Photographie d'un canapé">
       </div>
       <div class="cart__item__content">
         <div class="cart__item__content__description">
-          <h2>${values[i].name}</h2>
+          <h2>${products[i].name}</h2>
           <p>${cart[i].color} </p>
-          <p>${values[i].price}</p>
+          <p>${products[i].price}€</p>
         </div>
         <div class="cart__item__content__settings">
           <div class="cart__item__content__settings__quantity">
@@ -40,8 +42,6 @@ function displayProducts(values) {
         </div>
       </div>
     </article>`;
-
-    // console.log("cartElements ", cartElements);
   }
   shoppingCart.innerHTML = cartElements;
 }
@@ -50,36 +50,80 @@ function displayProducts(values) {
 if (!cart) {
   shoppingCart.innerHTML = "<p>Votre panier est vide<p>";
 } else {
-  // si le panier n'est pas vide afficher les produits dans le panier
-  Promise.all(promises).then((values) => {
-    console.log("VALUES ", values);
-    displayProducts(values);
+  // si le panier n'est pas vide afficher les produits dans le panier.
+  Promise.all(promises).then((products) => {
+    console.log(products);
+    displayProducts(products);
+    getTotal(products);
 
     let deleteButtons = document.querySelectorAll(".deleteItem");
-
     deleteItem(deleteButtons);
   });
 }
-
+// ------ Boucler sur les boutons de suppression--------
 function deleteItem(items) {
   for (let i = 0; i < items.length; i++) {
-    items[i].addEventListener("click", (event) => {
-      event.preventDefault();
-
+    items[i].addEventListener("click", () => {
       let idDuProduitSupprime = cart[i].id;
+      let colorDuProduitSupprime = cart[i].color;
 
       // Supprimer les produits aux ids correspondants
-      let nouveauPanier = cart.filter(function (item) {
+      cart = cart.filter(function (item) {
         // Retourne un tableau avec des éléments qui sont differents du produit cliqué
-        return item.id !== idDuProduitSupprime;
+        return (
+          item.id !== idDuProduitSupprime &&
+          item.color !== colorDuProduitSupprime
+        );
       });
-      console.log(nouveauPanier);
-
-      localStorage.setItem("cart", JSON.stringify(nouveauPanier));
+      console.log(cart);
+      localStorage.setItem("cart", JSON.stringify(cart));
     });
   }
 }
 
+//------------------Récupération du total des quantités--------------------
+//------Un tableau pour y mettre les prix présents dans le LS----------
+
+function getTotal(items) {
+  let totalPrice = [];
+  let totalQuantity = [];
+  let productInTheCart = [];
+  //let quantityInTheCart = [];
+
+  for (let i = 0; i < items.length; i++) {
+    productInTheCart = cart[i].quantity *= items[i].price;
+    totalPrice.push(productInTheCart);
+    console.log(totalPrice);
+
+    quantityInTheCart = cart[i].quantity;
+    console.log(quantityInTheCart);
+    totalQuantity.push(quantityInTheCart);
+    console.log(totalQuantity);
+    console.log(quantityInTheCart);
+  }
+
+  //---- Additionner les totaux avec la méthode reduce qui est un accumulateur qui traite chaque valeur d'une liste afin de la réduire à une seule valeur-----
+  const reducer = (accumulator, currentValue) => accumulator + currentValue;
+
+  let totals = totalPrice.reduce(reducer, 0);
+  console.log(totals);
+
+  let allQuantity = totalQuantity.reduce(reducer);
+  console.log(allQuantity);
+
+  let cartPrice = document.querySelector(".cart__price");
+  console.log(cartPrice);
+  const displayTotalPrice = `
+        <div class="cart__price">
+            <p>Total (<span id="totalQuantity">${allQuantity}</span> articles) : <span id="totalPrice">${totals}</span> €</p>
+        </div>
+    `;
+  console.log(displayTotalPrice);
+
+  cartPrice.innerHTML = ("beforeend", displayTotalPrice);
+}
+
+//------- création des variable dans lesquels iront les valeurs du formulaires-------
 const firstName = document.querySelector("#firstName").value;
 const lastName = document.querySelector("#lastName").value;
 const address = document.querySelector("#address").value;
@@ -90,7 +134,7 @@ const sendForm = document.querySelector("#order");
 
 sendForm.addEventListener("click", (e) => {
   e.preventDefault();
-
+  // Utilisation des regex pour une validation plus complexe
   const regExFirstNameNameCity = (value) => {
     return /^([A-Za-z]{0,20})?([-]{0,1})?([A-Za-z]{0,20})$/.test(value);
   };
@@ -110,7 +154,7 @@ sendForm.addEventListener("click", (e) => {
     city: city,
     email: email,
   };
-
+  //-------------- controle de la validité du prénom regex
   function firstNameControl() {
     if (regExFirstNameNameCity(firstName)) {
       return true;
@@ -122,7 +166,7 @@ sendForm.addEventListener("click", (e) => {
   }
 
   function lastNameControl() {
-    //---------controle de la validité du prenom  regex
+    //---------controle de la validité du nom  regex
 
     if (regExFirstNameNameCity(formValues.lastName)) {
       return true;
@@ -134,7 +178,7 @@ sendForm.addEventListener("click", (e) => {
   }
 
   function controlCity() {
-    //---------controle de la validité du prenom  regex
+    //---------controle de la validité de la ville  regex
 
     if (regExFirstNameNameCity(formValues.city)) {
       return true;
@@ -157,9 +201,9 @@ sendForm.addEventListener("click", (e) => {
   }
 
   function controlEmail() {
-    //---------controle de la validité du prenom  regex
+    //---------controle de la validité de l'email  regex
 
-    if (regexEmail(email)) {
+    if (regexEmail(formValues.email)) {
       return true;
     } else {
       document.getElementById("emailErrorMsg").innerHTML =
@@ -177,7 +221,7 @@ sendForm.addEventListener("click", (e) => {
   ) {
     //mettre l'obj ds "formulaire values" ds le local storage
 
-    localStorage.setItem("formulaireValues", JSON.stringify(formulaireValues));
+    localStorage.setItem("formulaireValues", JSON.stringify(formulairesValues));
   } else {
     return false;
   }
@@ -186,7 +230,7 @@ sendForm.addEventListener("click", (e) => {
 
   const orderPromise = fetch(`http://localhost:3000/api/products/order`, {
     method: "POST",
-    // envoi de l'objet contact et de la variable products en "POST"
+    // envoi des données formValues et cart avec une requête "POST"
     body: JSON.stringify({
       formValues,
       cart,
