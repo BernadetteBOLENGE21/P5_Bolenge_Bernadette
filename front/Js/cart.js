@@ -19,22 +19,22 @@ for (let i = 0; i < cart.length; i++) {
 
 function displayProducts(products) {
   let cartElements = "";
-  for (i = 0; i < cart.length; i++) {
+  for (j = 0; j < cart.length; j++) {
     console.log(cart.length);
     cartElements += `<article class="cart__item" data-id="{product-ID}" data-color="{product-color}">
       <div class="cart__item__img">
-        <img src="${products[i].imageUrl}" alt="Photographie d'un canapé">
+        <img src="${products[j].imageUrl}" alt="Photographie d'un canapé">
       </div>
       <div class="cart__item__content">
         <div class="cart__item__content__description">
-          <h2>${products[i].name}</h2>
-          <p>${cart[i].color} </p>
-          <p>${products[i].price}€</p>
+          <h2>${products[j].name}</h2>
+          <p>${cart[j].color} </p>
+          <p>${products[j].price}€</p>
         </div>
         <div class="cart__item__content__settings">
           <div class="cart__item__content__settings__quantity">
             <p>Qté : </p>
-            <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${cart[i].quantity}">
+            <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${cart[j].quantity}">
           </div>
           <div class="cart__item__content__settings__delete">
             <button class="deleteItem">Supprimer</button>
@@ -55,6 +55,7 @@ if (!cart) {
     console.log(products);
     displayProducts(products);
     getTotal(products);
+    modifyQtt(products);
 
     let deleteButtons = document.querySelectorAll(".deleteItem");
     deleteItem(deleteButtons);
@@ -62,10 +63,10 @@ if (!cart) {
 }
 // ------ Boucler sur les boutons de suppression--------
 function deleteItem(items) {
-  for (let i = 0; i < items.length; i++) {
-    items[i].addEventListener("click", () => {
-      let idDuProduitSupprime = cart[i].id;
-      let colorDuProduitSupprime = cart[i].color;
+  for (let k = 0; k < items.length; k++) {
+    items[k].addEventListener("click", () => {
+      let idDuProduitSupprime = cart[k].id;
+      let colorDuProduitSupprime = cart[k].color;
 
       // Supprimer les produits aux ids correspondants
       cart = cart.filter(function (item) {
@@ -90,16 +91,15 @@ function getTotal(items) {
   let productInTheCart = [];
   //let quantityInTheCart = [];
 
-  for (let i = 0; i < items.length; i++) {
-    productInTheCart = cart[i].quantity *= items[i].price;
+  for (let l = 0; l < cart.length; l++) {
+    productInTheCart = cart[l].quantity *= items[l].price;
     totalPrice.push(productInTheCart);
     console.log(totalPrice);
 
-    quantityInTheCart = cart[i].quantity;
+    quantityInTheCart = cart[l].quantity;
     console.log(quantityInTheCart);
     totalQuantity.push(quantityInTheCart);
     console.log(totalQuantity);
-    console.log(quantityInTheCart);
   }
 
   //---- Additionner les totaux avec la méthode reduce qui est un accumulateur qui traite chaque valeur d'une liste afin de la réduire à une seule valeur-----
@@ -121,6 +121,29 @@ function getTotal(items) {
   console.log(displayTotalPrice);
 
   cartPrice.innerHTML = ("beforeend", displayTotalPrice);
+}
+
+function modifyQtt(items) {
+  const optionQtt = document.querySelectorAll(".itemQuantity");
+  console.log("optionQtt");
+
+  for (let h = 0; h < optionQtt.length; h++) {
+    optionQtt[h].addEventListener("change", () => {
+      let changeQuantity = cart[h].quantity;
+      let quantityValue = optionQtt[h].valueAsNumber;
+
+      let resultFind = cart.find(
+        (element) => element.quantityValue !== changeQuantity
+      );
+
+      resultFind.quantity = quantityValue;
+
+      localStorage.setItem("cart", JSON.stringify(cart));
+
+      //----- refresh rapide--------
+      location.reload();
+    });
+  }
 }
 
 //------- création des variable dans lesquels iront les valeurs du formulaires-------
