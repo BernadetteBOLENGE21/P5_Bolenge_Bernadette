@@ -10,31 +10,58 @@ const url = "http://localhost:3000/api/products/";
 ///--------- Cette boucle récupère les produits de l'API en page cart. Il faut une boucle pour traiter les promesses
 //qui seront mises dasn un tableau qu'on pourra gérer avec promises.all. On boucle pour récupérer les produits du LS
 for (let i = 0; i < cart.length; i++) {
-  // console.log(cart[i].id);
+  console.log(cart[i].id);
   //On appelle l'API pour récupérer toutes les infos des produits présents dans le local storage et on push dans le tableau promises
   //afin de de gérer avec promises.all qui va gérer toutes les promessess en même temps. Il répond losque toutes les promesses sont résolues
   const promise = fetch(url + cart[i].id).then((res) => res.json());
   promises.push(promise);
 }
 
+//si le panier est vide
+if (!cart || cart.length == 0) {
+  shoppingCart.innerHTML = "<p>Votre panier est vide<p>";
+
+  let cartPrice = document.querySelector(".cart__price");
+  //console.log(cartPrice);
+  const displayTotalPrice = `
+        <div class="cart__price">
+            <p>Total (<span id="totalQuantity">0</span> article) : <span id="totalPrice">0</span> €</p>
+        </div>
+    `;
+  //console.log(displayTotalPrice);
+
+  cartPrice.innerHTML = displayTotalPrice;
+} else {
+  // si le panier n'est pas vide afficher les produits dans le panier.
+  Promise.all(promises).then((products) => {
+    console.log(products);
+    displayProducts(products);
+    getTotal(products);
+
+    deleteItem();
+    modifyQtt(products);
+  });
+}
+
 function displayProducts(products) {
   let cartElements = "";
-  for (j = 0; j < cart.length; j++) {
+  for (i = 0; i < cart.length; i++) {
+    const totalPrice1 = products[i].price * cart[i].quantity;
     console.log(cart.length);
-    cartElements += `<article class="cart__item" data-id="{product-ID}" data-color="{product-color}">
+    cartElements += `<article class="cart__item" data-id="${cart[i].id}" data-color="${cart[i].color}">
       <div class="cart__item__img">
-        <img src="${products[j].imageUrl}" alt="Photographie d'un canapé">
+        <img src="${products[i].imageUrl}" alt="Photographie d'un canapé">
       </div>
       <div class="cart__item__content">
         <div class="cart__item__content__description">
-          <h2>${products[j].name}</h2>
-          <p>${cart[j].color} </p>
-          <p>${products[j].price}€</p>
+          <h2>${products[i].name}</h2>
+          <p>${cart[i].color}</p>
+          <p>${totalPrice1}€</p>
         </div>
         <div class="cart__item__content__settings">
           <div class="cart__item__content__settings__quantity">
             <p>Qté : </p>
-            <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${cart[j].quantity}">
+            <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${cart[i].quantity}">
           </div>
           <div class="cart__item__content__settings__delete">
             <button class="deleteItem">Supprimer</button>
@@ -44,40 +71,29 @@ function displayProducts(products) {
     </article>`;
   }
   shoppingCart.innerHTML = cartElements;
-}
-
-//si le panier est vide
-if (!cart) {
-  shoppingCart.innerHTML = "<p>Votre panier est vide<p>";
-} else {
-  // si le panier n'est pas vide afficher les produits dans le panier.
-  Promise.all(promises).then((products) => {
-    console.log(products);
-    displayProducts(products);
-    getTotal(products);
-    modifyQtt(products);
-
-    let deleteButtons = document.querySelectorAll(".deleteItem");
-    deleteItem(deleteButtons);
-  });
+  console.log(shoppingCart);
 }
 // ------ Boucler sur les boutons de suppression--------
-function deleteItem(items) {
-  for (let k = 0; k < items.length; k++) {
-    items[k].addEventListener("click", () => {
-      let idDuProduitSupprime = cart[k].id;
-      let colorDuProduitSupprime = cart[k].color;
+function deleteItem() {
+  let deleteButtons = document.querySelectorAll(".deleteItem");
+
+  for (let i = 0; i < deleteButtons.length; i++) {
+    deleteButtons[i].addEventListener("click", () => {
+      let idDuProduitSupprime = cart[i].id;
+      let colorDuProduitSupprime = cart[i].color;
 
       // Supprimer les produits aux ids correspondants
       cart = cart.filter(function (item) {
         // Retourne un tableau avec des éléments qui sont differents du produit cliqué
-        return (
-          item.id !== idDuProduitSupprime &&
-          item.color !== colorDuProduitSupprime
+        return !(
+          item.id === idDuProduitSupprime &&
+          item.color === colorDuProduitSupprime
         );
       });
-      console.log(cart);
+      // console.log(cart);
       localStorage.setItem("cart", JSON.stringify(cart));
+
+      location.reload();
     });
   }
 }
@@ -85,62 +101,48 @@ function deleteItem(items) {
 //------------------Récupération du total des quantités--------------------
 //------Un tableau pour y mettre les prix présents dans le LS----------
 
-function getTotal(items) {
-  let totalPrice = [];
-  let totalQuantity = [];
-  let productInTheCart = [];
-  //let quantityInTheCart = [];
+function getTotal(products) {
+  let totalPrice = 0;
+  let totalQuantity = 0;
 
-  for (let l = 0; l < cart.length; l++) {
-    productInTheCart = cart[l].quantity *= items[l].price;
-    totalPrice.push(productInTheCart);
-    console.log(totalPrice);
-
-    quantityInTheCart = cart[l].quantity;
-    console.log(quantityInTheCart);
-    totalQuantity.push(quantityInTheCart);
+  for (let i = 0; i < cart.length; i++) {
+    totalQuantity += +cart[i].quantity;
+    totalPrice += products[i].price * cart[i].quantity;
     console.log(totalQuantity);
   }
-
-  //---- Additionner les totaux avec la méthode reduce qui est un accumulateur qui traite chaque valeur d'une liste afin de la réduire à une seule valeur-----
-  const reducer = (accumulator, currentValue) => accumulator + currentValue;
-
-  let totals = totalPrice.reduce(reducer, 0);
-  console.log(totals);
-
-  let allQuantity = totalQuantity.reduce(reducer);
-  console.log(allQuantity);
 
   let cartPrice = document.querySelector(".cart__price");
   console.log(cartPrice);
   const displayTotalPrice = `
         <div class="cart__price">
-            <p>Total (<span id="totalQuantity">${allQuantity}</span> articles) : <span id="totalPrice">${totals}</span> €</p>
+            <p>Total (<span id="totalQuantity">${totalQuantity}</span> articles) : <span id="totalPrice">${totalPrice}</span> €</p>
         </div>
     `;
-  console.log(displayTotalPrice);
+  //console.log(displayTotalPrice);
 
   cartPrice.innerHTML = ("beforeend", displayTotalPrice);
 }
 
-function modifyQtt(items) {
-  const optionQtt = document.querySelectorAll(".itemQuantity");
-  console.log("optionQtt");
+function modifyQtt(products) {
+  let optionQtt = document.querySelectorAll(".itemQuantity");
+  console.log(optionQtt);
 
-  for (let h = 0; h < optionQtt.length; h++) {
-    optionQtt[h].addEventListener("change", () => {
-      let changeQuantity = cart[h].quantity;
-      let quantityValue = optionQtt[h].valueAsNumber;
+  for (let i = 0; i < optionQtt.length; i++) {
+    optionQtt[i].addEventListener("change", (event) => {
+      console.log(optionQtt[i]);
+      //let changeQuantity = cart[i].quantity;
+      //console.log(changeQuantity);
+      let quantity = +event.target.value;
+      console.log(quantity);
 
-      let resultFind = cart.find(
-        (element) => element.quantityValue !== changeQuantity
-      );
+      //let product = cart.find((el) => el.id === cart[i].id && el.color === cart[i].color);
 
-      resultFind.quantity = quantityValue;
+      //product.quantity = quantity;
+
+      cart[i].quantity = quantity;
 
       localStorage.setItem("cart", JSON.stringify(cart));
 
-      //----- refresh rapide--------
       location.reload();
     });
   }
@@ -170,7 +172,7 @@ sendForm.addEventListener("click", (e) => {
     return /^[A-Za-z0-9\s]{5,60}$/.test(value);
   };
 
-  const formValues = {
+  const contact = {
     firstName: firstName,
     lastName: lastName,
     address: address,
@@ -191,7 +193,7 @@ sendForm.addEventListener("click", (e) => {
   function lastNameControl() {
     //---------controle de la validité du nom  regex
 
-    if (regExFirstNameNameCity(formValues.lastName)) {
+    if (regExFirstNameNameCity(contact.lastName)) {
       return true;
     } else {
       document.getElementById("lastNameErrorMsg").innerHTML =
@@ -203,7 +205,7 @@ sendForm.addEventListener("click", (e) => {
   function controlCity() {
     //---------controle de la validité de la ville  regex
 
-    if (regExFirstNameNameCity(formValues.city)) {
+    if (regExFirstNameNameCity(contact.city)) {
       return true;
     } else {
       document.getElementById("cityErrorMsg").innerHTML =
@@ -214,7 +216,7 @@ sendForm.addEventListener("click", (e) => {
   function controlAdress() {
     //---------controle de la validité de l'adresse
 
-    if (regexAdress(formValues.address)) {
+    if (regexAdress(contact.address)) {
       return true;
     } else {
       document.getElementById("addressErrorMsg").innerHTML =
@@ -226,7 +228,7 @@ sendForm.addEventListener("click", (e) => {
   function controlEmail() {
     //---------controle de la validité de l'email  regex
 
-    if (regexEmail(formValues.email)) {
+    if (regexEmail(contact.email)) {
       return true;
     } else {
       document.getElementById("emailErrorMsg").innerHTML =
@@ -238,25 +240,24 @@ sendForm.addEventListener("click", (e) => {
   if (
     firstNameControl() &&
     lastNameControl() &&
-    controlCity() &&
-    controlEmail() &&
-    controlAdress()
+    controlCity()
+    //controlEmail()&&
+    //controlAdress()
   ) {
     //mettre l'obj ds "formulaire values" ds le local storage
-
-    localStorage.setItem("formulaireValues", JSON.stringify(formulairesValues));
+    //localStorage.setItem("formulaireValues", JSON.stringify(formulairesValues));
   } else {
     return false;
   }
 
   // fetch url envoi des données au serveur
-
+  const products = cart.map((product) => product.id);
   const orderPromise = fetch(`http://localhost:3000/api/products/order`, {
     method: "POST",
-    // envoi des données formValues et cart avec une requête "POST"
+    // envoi des données contact et cart avec une requête "POST"
     body: JSON.stringify({
-      formValues,
-      cart,
+      contact,
+      products,
     }),
     headers: {
       Accept: "application/json",
