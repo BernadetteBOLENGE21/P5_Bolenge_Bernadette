@@ -1,4 +1,4 @@
-let cart = JSON.parse(localStorage.getItem("cart")); // définition du panier
+let cart = JSON.parse(localStorage.getItem("cart")) || []; // définition du panier
 console.log(cart);
 
 //----------------------Affichage des produits présents dans le panier--------------------//
@@ -135,10 +135,6 @@ function modifyQtt(products) {
       let quantity = +event.target.value;
       console.log(quantity);
 
-      //let product = cart.find((el) => el.id === cart[i].id && el.color === cart[i].color);
-
-      //product.quantity = quantity;
-
       cart[i].quantity = quantity;
 
       localStorage.setItem("cart", JSON.stringify(cart));
@@ -149,15 +145,15 @@ function modifyQtt(products) {
 }
 
 //------- création des variable dans lesquels iront les valeurs du formulaires-------
-const firstName = document.querySelector("#firstName").value;
-const lastName = document.querySelector("#lastName").value;
-const address = document.querySelector("#address").value;
-const city = document.querySelector("#city").value;
-const email = document.querySelector("#email").value;
 
 const sendForm = document.querySelector("#order");
 
 sendForm.addEventListener("click", (e) => {
+  const firstName = document.querySelector("#firstName").value;
+  const lastName = document.querySelector("#lastName").value;
+  const address = document.querySelector("#address").value;
+  const city = document.querySelector("#city").value;
+  const email = document.querySelector("#email").value;
   e.preventDefault();
   // Utilisation des regex pour une validation plus complexe
   const regExFirstNameNameCity = (value) => {
@@ -252,6 +248,8 @@ sendForm.addEventListener("click", (e) => {
 
   // fetch url envoi des données au serveur
   const products = cart.map((product) => product.id);
+  console.log(products);
+  console.log(contact);
   const orderPromise = fetch(`http://localhost:3000/api/products/order`, {
     method: "POST",
     // envoi des données contact et cart avec une requête "POST"
